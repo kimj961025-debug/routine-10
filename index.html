@@ -66,6 +66,9 @@ body.planning .grid{padding-bottom:calc(52vh + 20px);padding-bottom:calc(52dvh +
   background-image:linear-gradient(to bottom,var(--line) 1px,transparent 1px);background-size:100% var(--hh)}
 .col{position:relative;border-left:1px solid var(--line2)}
 .col.today{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.col.hol{background:rgba(229,56,59,.07)}
+.dh.hol{background:rgba(229,56,59,.07);border-radius:10px 10px 0 0}
+.dh.hol .w,.dh.hol .tag{color:var(--now)}
 .overlay{position:absolute;inset:0;pointer-events:none;z-index:20}
 
 /* events */
@@ -100,14 +103,18 @@ body.planning .fab,body.selecting .fab{display:none}
 
 /* selected event bar */
 .toolbar{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:31;display:none;
-  align-items:center;gap:8px;padding:10px 10px 10px 14px;border-radius:16px;background:var(--sheet);box-shadow:0 8px 30px rgba(0,0,0,.18);border:1px solid var(--line)}
+  flex-direction:column;gap:10px;padding:12px 12px 10px 14px;border-radius:16px;background:var(--sheet);box-shadow:0 8px 30px rgba(0,0,0,.18);border:1px solid var(--line);
+  max-height:60vh;overflow-y:auto}
 body.selecting .toolbar{display:flex}
-.toolbar .sw{width:12px;height:12px;border-radius:4px;background:var(--c);flex:none}
+.tbinfo{display:flex;gap:10px;align-items:flex-start}
+.toolbar .sw{width:12px;height:12px;border-radius:4px;background:var(--c);flex:none;margin-top:4px}
 .toolbar .tt{flex:1;min-width:0}
-.toolbar .tt b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.toolbar .tt span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.toolbar .tt .tm{color:var(--text);font-weight:500}
-.tbtn{height:36px;padding:0 12px;border-radius:10px;border:0;background:var(--surface);font-size:13px;font-weight:600;flex:none}
+.toolbar .tt b{display:block;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.toolbar .tt span{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.toolbar .tt .tm{color:var(--text);font-weight:500;margin-top:3px;white-space:pre-wrap}
+.tbbtns{display:flex;gap:6px}
+.tbbtns .tbtn{flex:1}
+.tbtn{height:38px;padding:0 10px;border-radius:10px;border:0;background:var(--surface);font-size:13px;font-weight:600;flex:none}
 .tbtn.main{background:var(--accent);color:#fff}
 .tbtn.danger{color:var(--now)}
 
@@ -149,7 +156,9 @@ body.selecting .toolbar{display:flex}
 .chip.placed{border-color:var(--c);background:color-mix(in srgb,var(--c) 35%,transparent)}
 .chip.placed .d{background:transparent;border:2px solid var(--c);width:12px;height:12px;position:relative}
 .chip.placed .d::after{content:"";position:absolute;left:2px;top:-1px;width:4px;height:7px;border:solid var(--c);border-width:0 2px 2px 0;transform:rotate(45deg)}
-.chip.edit{border-style:dashed}
+.chip.edit{border-style:dashed;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.chip.lift{border-style:solid;border-color:var(--c);background:var(--sheet);box-shadow:0 8px 20px rgba(0,0,0,.2);transform:scale(1.06);position:relative;z-index:2}
+.ehint{font-size:12px;color:var(--muted);margin:-4px 0 10px 2px}
 .chip .pen{font-size:12px;color:var(--muted)}
 .empty{font-size:13px;color:var(--muted);padding:6px 2px}
 .sfoot{display:flex;gap:8px;padding:10px 16px 12px;border-top:1px solid var(--line);flex:none}
@@ -180,6 +189,15 @@ body.selecting .toolbar{display:flex}
 .kinds{display:flex;gap:6px;flex-wrap:wrap}
 .kbtn{height:34px;padding:0 13px;border-radius:17px;border:1px solid var(--line);background:transparent;font-size:13px;font-weight:600}
 .kbtn.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+.kbtn.mng{border-style:dashed;color:var(--muted)}
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.trow > span{width:30px;font-size:13px;color:var(--muted);font-weight:600}
+.trow input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font:inherit;font-size:17px;color:var(--text);text-align:center}
+.trow button{width:54px;height:46px;border-radius:12px;border:0;background:var(--surface);font-size:14px;font-weight:700;flex:none}
+.krow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.krow input{flex:1}
+.krow .lock{width:46px;text-align:center;font-size:11px;color:var(--muted)}
+.krow .kdel{width:46px;height:46px;border-radius:12px;border:0;background:var(--surface);color:var(--now);font-size:18px;font-weight:700}
 .chk{display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:10px;cursor:pointer}
 .chk input{width:20px;height:20px;accent-color:var(--accent)}
 .err{color:var(--now);font-size:13px;min-height:18px;margin:-6px 0 8px}
@@ -269,11 +287,16 @@ details.set summary{font-size:14px;font-weight:700;cursor:pointer;padding:4px 0}
 <button class="fab" id="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>계획</button>
 
 <div class="toolbar" id="toolbar">
-  <span class="sw" id="tbSw"></span>
-  <div class="tt"><b id="tbTitle"></b><span id="tbTime"></span><span class="tm" id="tbMemoTxt" hidden></span></div>
-  <button class="tbtn main" id="tbMemo">기록</button>
-  <button class="tbtn danger" id="tbDel">삭제</button>
-  <button class="tbtn" id="tbClose">닫기</button>
+  <div class="tbinfo">
+    <span class="sw" id="tbSw"></span>
+    <div class="tt"><b id="tbTitle"></b><span id="tbTime"></span><span class="tm" id="tbMemoTxt" hidden></span></div>
+  </div>
+  <div class="tbbtns">
+    <button class="tbtn main" id="tbMemo">기록</button>
+    <button class="tbtn" id="tbTimeBtn">시간 조정</button>
+    <button class="tbtn danger" id="tbDel">삭제</button>
+    <button class="tbtn" id="tbClose">닫기</button>
+  </div>
 </div>
 
 <section class="sheet" id="sheet" aria-label="루틴 계획">
@@ -289,6 +312,7 @@ details.set summary{font-size:14px;font-weight:700;cursor:pointer;padding:4px 0}
       <button class="pill" id="editBtn">수정</button>
       <button class="plus" id="addBtn" aria-label="루틴 추가"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
+    <div class="ehint" id="ehint" hidden>탭하면 수정 · 꾹 눌러 끌면 순서 바꾸기</div>
     <div class="chips" id="chips"></div>
   </div>
   <div class="sfoot">
@@ -331,6 +355,28 @@ details.set summary{font-size:14px;font-weight:700;cursor:pointer;padding:4px 0}
     <div class="actions"><button class="btn-ghost" id="mCancel">취소</button><button class="btn-main" id="mOk">저장</button></div>
   </div>
 </div>
+<div class="modal" id="tModal">
+  <div class="card" id="tCard">
+    <h2 id="tTitle">시간 조정</h2>
+    <div class="trow"><span>시작</span><button id="tS-">−5분</button><input type="time" id="tS" step="300" aria-label="시작 시각"><button id="tS+">+5분</button></div>
+    <div class="trow"><span>끝</span><button id="tE-">−5분</button><input type="time" id="tE" step="300" aria-label="끝 시각"><button id="tE+">+5분</button></div>
+    <div class="dur" id="tDur"><span>소요 시간</span><b></b></div>
+    <div class="err" id="tErr" style="margin-top:10px"></div>
+    <div class="actions"><button class="btn-ghost" id="tCancel">취소</button><button class="btn-main" id="tOk">저장</button></div>
+  </div>
+</div>
+
+<div class="modal" id="kModal" style="z-index:70">
+  <div class="card">
+    <h2>종류 편집</h2>
+    <div class="help" style="font-size:12px;color:var(--muted);line-height:1.5;margin:-6px 0 12px">수면·작업·식사·기타는 리포트 계산에 꼭 필요해서 이름만 바꿀 수 있어요. 새로 만든 종류는 리포트에 시간 합계로 나와요. 지운 종류를 쓰던 루틴은 「기타」가 돼요.</div>
+    <div id="kList"></div>
+    <button class="kbtn mng" id="kAdd" style="margin:2px 0 16px">+ 종류 추가</button>
+    <div class="err" id="kErr"></div>
+    <div class="actions"><button class="btn-ghost" id="kCancel">취소</button><button class="btn-main" id="kOk">저장</button></div>
+  </div>
+</div>
+
 <div class="modal" id="rModal">
   <div class="card rcard">
     <div class="rtop">
@@ -409,9 +455,18 @@ function migrate(d){
     });
     d.mealsSeeded=true; ch=true;
   }
-  d.routines.forEach(r=>{ if(!r.kind){ r.kind=guessKind(r); ch=true; } });
+  // 리포트용 종류 목록 (수면·작업·식사·기타는 계산에 쓰여서 고정, 나머지는 사용자가 추가·삭제)
+  if(!Array.isArray(d.kinds)){
+    d.kinds=[{id:'sleep',name:'수면'},{id:'work',name:'작업'},{id:'meal',name:'식사'},{id:'dog',name:'강아지'},{id:'etc',name:'기타'}]; ch=true;
+  }
+  FIXED_KINDS.forEach((id,i)=>{ if(!d.kinds.some(k=>k.id===id)){ d.kinds.splice(Math.min(i,d.kinds.length),0,{id,name:{sleep:'수면',work:'작업',meal:'식사',etc:'기타'}[id]}); ch=true; } });
+  d.routines.forEach(r=>{
+    if(!r.kind){ r.kind=guessKind(r); ch=true; }
+    if(r.kind!=='rest'&&!d.kinds.some(k=>k.id===r.kind)){ r.kind='etc'; ch=true; }
+  });
   return ch;
 }
+const FIXED_KINDS=['sleep','work','meal','etc'];
 function guessKind(r){
   if(r.meal) return 'meal';
   const t=r.title||'';
@@ -428,6 +483,7 @@ function normalize(d){
     holidays:(d&&d.holidays&&typeof d.holidays==='object')?d.holidays:{},
     colors:Array.isArray(d&&d.colors)?d.colors:undefined,
     mealsSeeded:!!(d&&d.mealsSeeded),
+    kinds:Array.isArray(d&&d.kinds)?d.kinds:undefined,
     reports:(d&&d.reports&&typeof d.reports==='object')?d.reports:{},
     updatedAt:Number(d&&d.updatedAt)||0
   };
@@ -449,8 +505,8 @@ const routineOf=id=>S.routines.find(r=>r.id===id);
 const colorOf=it=>{const r=routineOf(it.rid);return (r&&r.color)||it.color||'#64748b'};
 const titleOf=it=>{const r=routineOf(it.rid);return (r&&r.title)||it.title||'루틴'};
 // 휴식은 따로 등록하지 않고 캘린더의 빈 시간으로 계산 ('rest'는 예전 데이터 호환용)
-const KINDS=[['sleep','수면'],['work','작업'],['meal','식사'],['dog','강아지'],['etc','기타']];
-const KIND_NAME={sleep:'수면',work:'작업',meal:'식사',dog:'강아지',etc:'기타',rest:'휴식'};
+const kindName=id=>{const k=S.kinds.find(x=>x.id===id);return k?k.name:id==='rest'?'휴식':'기타'};
+const customKinds=()=>S.kinds.filter(k=>!FIXED_KINDS.includes(k.id));
 const kindOf=it=>{const r=routineOf(it.rid);return (r&&r.kind)||'etc'};
 const isMeal=it=>kindOf(it)==='meal';
 const timesFor=(r,hol)=>hol&&r.hs&&r.he?[r.hs,r.he]:[r.s,r.e];
@@ -505,11 +561,11 @@ function renderHead(){
   const tk=keyOf(new Date()); let h='<span></span>';
   for(let i=0;i<7;i++){
     const d=addDays(weekStart,i), k=keyOf(d);
-    const cls=['dh']; if(k===tk) cls.push('today'); if(sheetOpen&&k===keyOf(sheetDay)) cls.push('pick');
+    const cls=['dh']; if(k===tk) cls.push('today'); if(S.holidays[k]) cls.push('hol'); if(sheetOpen&&k===keyOf(sheetDay)) cls.push('pick');
     h+='<button class="'+cls.join(' ')+'" data-i="'+i+'" title="'+(sheetOpen?'이 날 선택':'이 날 리포트 보기')+'"><span class="w">'+WD[i]+'</span><span class="n">'+d.getDate()+'</span><span class="tag">'+(S.holidays[k]?'휴일':'')+'</span></button>';
   }
   $('dayhead').innerHTML=h;
-  colEls().forEach((c,i)=>c.classList.toggle('today',keyOf(addDays(weekStart,i))===tk));
+  colEls().forEach((c,i)=>{ const k=keyOf(addDays(weekStart,i)); c.classList.toggle('today',k===tk); c.classList.toggle('hol',!!S.holidays[k]); });
 }
 
 function items(){
@@ -603,6 +659,49 @@ function toggleSelect(id){ select(selectedId===id?null:id); }
 cols.addEventListener('click',e=>{ if(!e.target.closest('.ev')&&selectedId) select(null); });
 $('tbClose').onclick=()=>select(null);
 $('tbDel').onclick=()=>{ S.events=S.events.filter(e=>e.id!==selectedId); selectedId=null; save(); renderAll(); };
+
+/* ---------- 시간 세밀 조정 (짧은 일정은 끌기가 어려워서 5분 단위로) ---------- */
+let tEdit=null; // {id, s, e}
+const hhmm=ms=>{const d=new Date(ms);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+function renderTime(){
+  $('tS').value=hhmm(tEdit.s); $('tE').value=hhmm(tEdit.e);
+  const ok=tEdit.e>tEdit.s;
+  $('tDur').querySelector('b').textContent=ok?fmtDur(Math.round((tEdit.e-tEdit.s)/MIN)):'–';
+  const ed=new Date(tEdit.e), sd=new Date(tEdit.s);
+  $('tErr').textContent=keyOf(sd)!==keyOf(ed)&&ok?'끝: 다음날 '+hhmm(tEdit.e):'';
+  $('tErr').style.color='var(--muted)';
+}
+$('tbTimeBtn').onclick=()=>{
+  const ev=S.events.find(e=>e.id===selectedId); if(!ev) return;
+  tEdit={id:ev.id,s:ev.start,e:ev.end};
+  $('tCard').style.setProperty('--c',colorOf(ev));
+  $('tTitle').textContent=titleOf(ev)+' 시간 조정';
+  renderTime(); $('tModal').classList.add('open');
+};
+[['tS-','s',-5],['tS+','s',5],['tE-','e',-5],['tE+','e',5]].forEach(([id,f,d])=>{
+  $(id).onclick=()=>{
+    tEdit[f]+=d*MIN;
+    if(tEdit.e-tEdit.s<5*MIN){ if(f==='s') tEdit.s=tEdit.e-5*MIN; else tEdit.e=tEdit.s+5*MIN; }
+    renderTime();
+  };
+});
+// 직접 입력: 시작은 그날 기준, 끝은 시작보다 이르면 다음날로
+$('tS').addEventListener('change',()=>{
+  if(!$('tS').value) return; const dur=tEdit.e-tEdit.s;
+  tEdit.s=sod(tEdit.s).getTime()+hm2m($('tS').value)*MIN; tEdit.e=tEdit.s+dur; renderTime();
+});
+$('tE').addEventListener('change',()=>{
+  if(!$('tE').value) return;
+  let e=sod(tEdit.s).getTime()+hm2m($('tE').value)*MIN; if(e<=tEdit.s) e+=DAY; tEdit.e=e; renderTime();
+});
+function closeTime(){ $('tModal').classList.remove('open'); tEdit=null; }
+$('tCancel').onclick=closeTime;
+$('tModal').addEventListener('click',e=>{ if(e.target===$('tModal')) closeTime(); });
+$('tOk').onclick=()=>{
+  const ev=S.events.find(e=>e.id===tEdit.id);
+  if(ev&&tEdit.e>tEdit.s){ ev.start=tEdit.s; ev.end=tEdit.e; save(); }
+  closeTime(); renderAll();
+};
 
 /* ---------- memo (그날 먹은 메뉴 등) ---------- */
 let memoId=null;
@@ -781,6 +880,7 @@ function renderSheet(){
   $('holHint').textContent=hol?'휴일 시간대로 배치돼요':'평일 시간대로 배치돼요';
   $('editBtn').classList.toggle('on',editMode);
   $('editBtn').textContent=editMode?'수정 끝':'수정';
+  $('ehint').hidden=!editMode||S.routines.length<2;
   const chips=$('chips');
   if(!S.routines.length){ chips.innerHTML='<div class="empty">+ 버튼으로 첫 루틴을 만들어 보세요.</div>'; }
   else{
@@ -811,7 +911,59 @@ $('holiday').addEventListener('change',e=>{
 });
 $('editBtn').onclick=()=>{ editMode=!editMode; renderSheet(); };
 $('addBtn').onclick=()=>openForm(null);
+/* 수정 모드: 꾹 눌러 끌어서 루틴 순서 바꾸기.
+   끄는 동안엔 칩 DOM만 옮기고(다시 그리면 터치 대상이 사라짐) 놓을 때 순서를 저장 */
+let cdrag=null, cpress=null, suppressClick=false;
+function chipAt(x,y){ const el=document.elementFromPoint(x,y); return el&&el.closest('#chips .chip'); }
+function liftChip(chip){
+  cdrag={chip}; chip.classList.add('lift');
+  if(navigator.vibrate) try{navigator.vibrate(12)}catch(_){}
+}
+function moveChip(x,y){
+  const over=chipAt(x,y), chip=cdrag.chip;
+  if(!over||over===chip) return;
+  const list=[...$('chips').children], from=list.indexOf(chip), to=list.indexOf(over);
+  $('chips').insertBefore(chip, from<to?over.nextSibling:over);
+}
+function dropChip(){
+  if(!cdrag) return;
+  const order=[...$('chips').children].map(c=>c.dataset.id);
+  const before=S.routines.map(r=>r.id).join();
+  S.routines.sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+  cdrag=null; suppressClick=true; setTimeout(()=>suppressClick=false,350);
+  if(S.routines.map(r=>r.id).join()!==before) save();
+  renderSheet();
+}
+const chipsEl=$('chips');
+chipsEl.addEventListener('touchstart',e=>{
+  const chip=editMode&&e.target.closest('.chip'); if(!chip||e.touches.length>1) return;
+  const t=e.touches[0];
+  cpress={chip,x:t.clientX,y:t.clientY,timer:setTimeout(()=>{ if(cpress){ cpress.timer=null; liftChip(cpress.chip); } },350)};
+},{passive:true});
+chipsEl.addEventListener('touchmove',e=>{
+  const t=e.touches[0];
+  if(cdrag){ if(e.cancelable) e.preventDefault(); moveChip(t.clientX,t.clientY); return; }
+  if(cpress&&cpress.timer&&Math.hypot(t.clientX-cpress.x,t.clientY-cpress.y)>8){ clearTimeout(cpress.timer); cpress=null; }
+},{passive:false});
+chipsEl.addEventListener('touchend',e=>{
+  if(cpress&&cpress.timer) clearTimeout(cpress.timer);
+  cpress=null;
+  if(cdrag){ if(e.cancelable) e.preventDefault(); dropChip(); }
+});
+chipsEl.addEventListener('touchcancel',()=>{ if(cpress&&cpress.timer) clearTimeout(cpress.timer); cpress=null; if(cdrag) dropChip(); });
+chipsEl.addEventListener('contextmenu',e=>{ if(editMode) e.preventDefault(); });
+chipsEl.addEventListener('mousedown',e=>{
+  const chip=editMode&&e.button===0&&e.target.closest('.chip'); if(!chip) return;
+  cpress={chip,x:e.clientX,y:e.clientY,timer:setTimeout(()=>{ if(cpress){ cpress.timer=null; liftChip(cpress.chip); } },350)};
+});
+document.addEventListener('mousemove',e=>{
+  if(cdrag){ moveChip(e.clientX,e.clientY); return; }
+  if(cpress&&cpress.timer&&Math.hypot(e.clientX-cpress.x,e.clientY-cpress.y)>6){ clearTimeout(cpress.timer); cpress=null; }
+});
+document.addEventListener('mouseup',()=>{ if(cpress&&cpress.timer) clearTimeout(cpress.timer); cpress=null; if(cdrag) dropChip(); });
+
 $('chips').addEventListener('click',e=>{
+  if(suppressClick){ suppressClick=false; return; }
   const b=e.target.closest('.chip'); if(!b) return;
   const r=routineOf(b.dataset.id); if(!r) return;
   if(editMode){ openForm(r); return; }
@@ -832,9 +984,43 @@ $('chips').addEventListener('click',e=>{
 /* ---------- routine form ---------- */
 let editing=null, fColor=null, fKind='etc', delArmed=false;
 function renderKinds(){
-  $('fKinds').innerHTML=KINDS.map(([k,l])=>'<button class="kbtn'+(k===fKind?' on':'')+'" data-k="'+k+'">'+l+'</button>').join('');
+  $('fKinds').innerHTML=S.kinds.map(k=>'<button class="kbtn'+(k.id===fKind?' on':'')+'" data-k="'+esc(k.id)+'">'+esc(k.name)+'</button>').join('')
+    +'<button class="kbtn mng" data-mng="1">편집</button>';
 }
-$('fKinds').addEventListener('click',e=>{ const b=e.target.closest('.kbtn'); if(!b) return; fKind=b.dataset.k; renderKinds(); });
+$('fKinds').addEventListener('click',e=>{
+  const b=e.target.closest('.kbtn'); if(!b) return;
+  if(b.dataset.mng){ openKinds(); return; }
+  fKind=b.dataset.k; renderKinds();
+});
+
+/* ---------- 종류 편집 ---------- */
+let kDraft=[];
+function renderKindList(){
+  $('kList').innerHTML=kDraft.map((k,i)=>'<div class="krow"><input class="txt" data-i="'+i+'" maxlength="12" value="'+esc(k.name)+'" placeholder="이름" aria-label="종류 이름">'
+    +(FIXED_KINDS.includes(k.id)?'<span class="lock">기본</span>':'<button class="kdel" data-i="'+i+'" aria-label="삭제">×</button>')+'</div>').join('');
+}
+function openKinds(){ kDraft=S.kinds.map(k=>Object.assign({},k)); $('kErr').textContent=''; renderKindList(); $('kModal').classList.add('open'); }
+function closeKinds(){ $('kModal').classList.remove('open'); }
+$('kList').addEventListener('input',e=>{ const i=e.target.dataset.i; if(i!=null&&e.target.tagName==='INPUT') kDraft[+i].name=e.target.value; });
+$('kList').addEventListener('click',e=>{ const b=e.target.closest('.kdel'); if(!b) return; kDraft.splice(+b.dataset.i,1); renderKindList(); });
+$('kAdd').onclick=()=>{
+  // 「기타」는 맨 뒤에 두고 새 종류는 그 앞에
+  const at=kDraft.findIndex(k=>k.id==='etc');
+  kDraft.splice(at<0?kDraft.length:at,0,{id:'k-'+uid(),name:''}); renderKindList();
+  const ins=$('kList').querySelectorAll('input'); const n=ins[at<0?ins.length-1:at]; if(n) n.focus();
+};
+$('kCancel').onclick=closeKinds;
+$('kModal').addEventListener('click',e=>{ if(e.target===$('kModal')) closeKinds(); });
+$('kOk').onclick=()=>{
+  const list=kDraft.map(k=>({id:k.id,name:k.name.trim()}));
+  if(list.some(k=>!k.name)){ $('kErr').textContent='이름이 빈 종류가 있어요.'; return; }
+  if(new Set(list.map(k=>k.name)).size!==list.length){ $('kErr').textContent='같은 이름이 있어요.'; return; }
+  const ids=new Set(list.map(k=>k.id));
+  S.routines.forEach(r=>{ if(r.kind!=='rest'&&!ids.has(r.kind)) r.kind='etc'; });
+  S.kinds=list;
+  if(!ids.has(fKind)) fKind='etc';
+  save(); closeKinds(); renderKinds();
+};
 function updDur(){
   if(fColor) $('card').style.setProperty('--c',fColor); else $('card').style.removeProperty('--c');
   const s=$('fS').value, e=$('fE').value;
@@ -933,18 +1119,17 @@ const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const clockOf=m=>{m=((Math.round(m)%1440)+1440)%1440;return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')};
 const fromEve=m=>clockOf(m+18*60);
 
-// 메뉴 대충 훑어보기: 튀김·면·기름진 고기·술·단 것 + 늦은 시간 → 헤비/에바
-const HEAVY=['치킨','피자','라면','짜장','짬뽕','떡볶이','엽떡','마라','삼겹','곱창','막창','대창','족발','보쌈','햄버거','버거',
-  '돈까스','돈가스','튀김','감튀','닭발','탕수육','부대찌개','순대','크림','핫도그','닭강정','찜닭','감자탕','불닭','제육',
-  '맥주','소주','술','과자','아이스크림','케이크','도넛','마카롱','곱도리','쫄면','냉동','컵밥','편의점'];
+// 메뉴 대충 훑어보기 — 여유 있게: 한 가지 메뉴만으로는 표시하지 않고, 겹칠 때만
+//   아주 기름진 메뉴 개수 + 술(1) + 늦은 시간에 기름진 메뉴(1) → 2점 헤비, 3점 에바
+const STRONG=['치킨','피자','곱창','막창','대창','곱도리','족발','보쌈','마라','엽떡','삼겹','버거','튀김','감튀','닭강정','탕수육','부대찌개','불닭'];
+const ALCOHOL=['맥주','소주','술','와인','하이볼','막걸리','사케','위스키'];
 function mealFlag(m){
-  const memo=m.memo||'', hits=HEAVY.filter(w=>memo.includes(w));
-  const h=new Date(m.start).getHours(), late=/야식/.test(titleOf(m))||h>=21||h<4;
-  const score=hits.length+(late?1:0);
-  const why=hits.slice(0,3).join('·')+(late?(hits.length?' + ':'')+'늦은 시간':'');
-  return {level:hits.length&&score>=2?2:hits.length?1:0, hits, late, why};
+  const memo=m.memo||'', hits=STRONG.filter(w=>memo.includes(w)), alc=ALCOHOL.some(w=>memo.includes(w));
+  const h=new Date(m.start).getHours(), isNight=/야식/.test(titleOf(m)), late=isNight||h>=22||h<4;
+  const score=hits.length+(alc?1:0)+(late&&hits.length?1:0);
+  return {level:score>=3?2:score>=2?1:0, hits, alc, late, isNight};
 }
-const flagTag=f=>(f.level===2?'<em class="mtag eva">🚨 에바</em>':f.level===1?'<em class="mtag heavy">🔥 헤비</em>':'')+(f.late?'<em class="mtag late">🌙 늦은 시간</em>':'');
+const flagTag=f=>(f.level===2?'<em class="mtag eva">🚨 에바</em>':f.level===1?'<em class="mtag heavy">🔥 헤비</em>':'')+(f.late&&!f.isNight?'<em class="mtag late">🌙 늦은 시간</em>':'');
 function mealsOf(day){
   const b=sod(day).getTime();
   return S.events.filter(x=>kindOf(x)==='meal'&&x.start>=b&&x.start<b+DAY).sort((x,y)=>x.start-y.start);
@@ -953,8 +1138,8 @@ function analyze(day){
   const b=sod(day).getTime(), e=b+DAY;
   const evs=S.events.filter(x=>x.end>b&&x.start<e).sort((x,y)=>x.start-y.start);
   const ivOf=k=>evs.filter(x=>kindOf(x)===k).map(x=>clipIv(x,b,e)).filter(Boolean);
-  const work=mergeIv(ivOf('work'),10*MIN), dog=mergeIv(ivOf('dog'),0);
-  const workMin=sumIv(work), dogMin=sumIv(dog);
+  const work=mergeIv(ivOf('work'),10*MIN), workMin=sumIv(work);
+  const custom=customKinds().map(k=>({id:k.id,name:k.name,min:sumIv(mergeIv(ivOf(k.id),0))}));
   const longest=work.reduce((m,x)=>Math.max(m,(x[1]-x[0])/MIN),0);
   const meals=mealsOf(day);
   const sl=sleepOf(day);
@@ -978,41 +1163,30 @@ function analyze(day){
   const week=[]; for(let i=6;i>=0;i--){ const d=addDays(day,-i); week.push({day:d,sl:sleepOf(d)}); }
   const nights=week.filter(w=>w.sl);
   const beds=nights.map(w=>w.sl.bed), wakes=nights.map(w=>w.sl.wake);
-  const F=[];
-  if(!sl) F.push(['info','수면 기록이 없어요. 「수면」 루틴을 배치하고 실제 잔 시간에 맞게 늘이거나 줄여 주세요.']);
+  // 자동 점검은 교과서 기준 대신 「내 최근 패턴」 기준으로, 꼭 필요한 것만
+  const F=[], D=m=>fmtDur(Math.round(m));
+  if(!sl) F.push(['info','수면 기록이 없어요.']);
   else{
     const h=sl.total/60;
-    if(h<6) F.push(['bad','수면 '+fmtDur(Math.round(sl.total))+' — 많이 부족해요. 성인 권장은 7~9시간이에요.']);
-    else if(h<7) F.push(['warn','수면 '+fmtDur(Math.round(sl.total))+' — 조금 부족해요 (권장 7~9시간).']);
-    else if(h>9.5) F.push(['warn','수면 '+fmtDur(Math.round(sl.total))+' — 길었어요. 피로가 쌓였거나 리듬이 밀렸을 수 있어요.']);
-    else F.push(['good','수면 '+fmtDur(Math.round(sl.total))+' — 적당한 양이에요.']);
-    if(sl.bed>8*60) F.push(['warn','취침이 '+fromEve(sl.bed)+'로 늦은 편이에요. 새벽 2시 전 취침을 목표로 해 보세요.']);
+    if(h<5) F.push(['bad','수면 '+D(sl.total)+' — 많이 짧았어요. 오늘은 조금 일찍 눕거나 짧게 낮잠으로 채워 보세요.']);
+    else if(h<6) F.push(['warn','수면 '+D(sl.total)+' — 조금 짧았어요.']);
+    else if(h>10) F.push(['info','수면 '+D(sl.total)+' — 길게 잤어요. 많이 피곤했나 봐요.']);
+    else F.push(['good','수면 '+D(sl.total)+' — 괜찮아요.']);
   }
   if(nights.length>=3){
-    const s=sd(beds), sw=sd(wakes);
-    const msg='최근 '+nights.length+'일 취침 편차 ±'+fmtDur(Math.round(s))+', 기상 편차 ±'+fmtDur(Math.round(sw));
-    if(s>60||sw>60) F.push(['bad',msg+' — 수면 리듬이 들쭉날쭉해요. 기상 시각부터 고정해 보세요.']);
-    else if(s>30||sw>30) F.push(['warn',msg+' — 조금 흔들려요. ±30분 안을 목표로.']);
-    else F.push(['good',msg+' — 규칙적이에요.']);
-    if(sl&&Math.abs(sl.bed-avg(beds))>90) F.push(['warn','오늘 취침은 평소('+fromEve(avg(beds))+')보다 '+fmtDur(Math.round(Math.abs(sl.bed-avg(beds))))+' '+(sl.bed>avg(beds)?'늦었어요':'일렀어요')+'.']);
-  }else if(sl) F.push(['info','수면 기록이 3일 이상 쌓이면 규칙성도 알려 드려요.']);
-  if(workMin>0){
-    if(workMin>9*60) F.push(['bad','작업 '+fmtDur(Math.round(workMin))+' — 너무 많아요. 내일은 줄일 수 있는 걸 골라 보세요.']);
-    else if(workMin>7*60) F.push(['warn','작업 '+fmtDur(Math.round(workMin))+' — 많은 편이에요.']);
-    else F.push(['good','작업 '+fmtDur(Math.round(workMin))+'.']);
-    if(longest>180) F.push(['warn','쉬지 않고 '+fmtDur(Math.round(longest))+' 연속 작업했어요. 90분마다 10분 쉬어 주세요.']);
-    if(awakeMin&&workMin>=240){
-      const r=restMin/workMin;
-      if(restMin<60||r<0.2) F.push([restMin<30?'bad':'warn','작업 '+fmtDur(Math.round(workMin))+' 동안 빈 시간(휴식)이 '+(restMin?fmtDur(Math.round(restMin))+'뿐이에요':'거의 없어요')+'. 작업 사이에 비워 두는 시간을 만들어 보세요.']);
-      else F.push(['good','작업 사이 빈 시간(휴식) '+fmtDur(Math.round(restMin))+' — 숨 돌릴 틈이 있었어요.']);
-    }
-  }else F.push(['info','작업 기록이 없어요. 루틴 종류를 「작업」으로 정하면 작업 시간이 계산돼요.']);
-  if(dogMin) F.push(['good','강아지와 '+fmtDur(Math.round(dogMin))+' 보냈어요 🐶']);
-  if(!meals.length) F.push(['info','오늘 식사 기록이 없어요.']);
-  else if(meals.some(m=>!m.memo)) F.push(['info','메뉴를 적지 않은 식사가 있어요. 적어 두면 헤비한지 봐 드려요.']);
-  if(evaN||heavyN>=3) F.push([evaN>=2||heavyN>=4?'bad':'warn','최근 7일 헤비한 식사 '+heavyN+'번'+(evaN?' (에바 '+evaN+'번)':'')+'. 다음 끼니는 가볍게 가 보세요.']);
-  if(lateN>=3) F.push(['warn','최근 7일 늦은 시간 식사 '+lateN+'번 — 수면에도 영향을 줘요.']);
-  return {day,evs,work,workMin,dogMin,longest,meals,sl,week,nights,beds,wakes,awakeMin,restMin,restIv,mealWeek,heavyN,evaN,lateN,F};
+    const v=Math.max(sd(beds),sd(wakes));
+    if(v>120) F.push(['warn','최근 '+nights.length+'일 자고 일어나는 시간 차이가 커요 (±'+D(v)+'). 다 맞추긴 어려우니 기상 시각 하나만 비슷하게 맞춰 봐요.']);
+    else if(v>60) F.push(['info','최근 '+nights.length+'일 수면 시간대가 조금 흔들려요 (±'+D(v)+').']);
+    else F.push(['good','최근 '+nights.length+'일 비슷한 시간에 자고 일어났어요 (±'+D(v)+').']);
+    if(sl&&Math.abs(sl.bed-avg(beds))>150) F.push(['info','오늘은 평소('+fromEve(avg(beds))+')보다 '+D(Math.abs(sl.bed-avg(beds)))+' '+(sl.bed>avg(beds)?'늦게':'일찍')+' 잤어요.']);
+  }
+  if(workMin>10*60) F.push(['warn','작업 '+D(workMin)+' — 긴 하루였어요. 내일은 조금 여유 있게 잡아 봐요.']);
+  else if(workMin>0) F.push(['info','작업 '+D(workMin)+'.']);
+  const done=custom.filter(c=>c.min>0);
+  if(done.length) F.push(['good',done.map(c=>c.name+' '+D(c.min)).join(' · ')]);
+  if(evaN>=2||heavyN>=4) F.push(['warn','이번 주 무거운 식사가 좀 잦았어요 (헤비 '+heavyN+(evaN?' · 에바 '+evaN:'')+'). 한두 끼만 가볍게 바꿔도 충분해요.']);
+  if(lateN>=4) F.push(['info','이번 주 밤 10시 넘어 먹은 날이 '+lateN+'번이에요.']);
+  return {day,evs,work,workMin,custom,longest,meals,sl,week,nights,beds,wakes,awakeMin,restMin,restIv,mealWeek,heavyN,evaN,lateN,F};
 }
 
 let repDay=null;
@@ -1026,7 +1200,7 @@ function renderReport(){
     +'<div class="stat"><span>😴 수면</span><b>'+(sl?fmtDur(Math.round(sl.total)):'–')+'</b><small>'+(sl?fmtT(sl.main.start)+' → '+fmtT(sl.main.end)+(sl.naps?' · 낮잠 '+sl.naps:''):'기록 없음')+'</small></div>'
     +'<div class="stat"><span>💻 작업</span><b>'+(A.workMin?fmtDur(Math.round(A.workMin)):'–')+'</b><small>'+(A.workMin?'최장 연속 '+fmtDur(Math.round(A.longest)):'기록 없음')+'</small></div>'
     +'<div class="stat"><span>☕ 휴식 (빈 시간)</span><b>'+(A.awakeMin?fmtDur(Math.round(A.restMin)):'–')+'</b><small>'+(A.awakeMin?'깨어 있던 '+fmtDur(Math.round(A.awakeMin))+' 중':'기상 기록 필요')+'</small></div>'
-    +'<div class="stat"><span>🐶 강아지</span><b>'+(A.dogMin?fmtDur(Math.round(A.dogMin)):'–')+'</b><small>'+(A.dogMin?'놀이·산책':'기록 없음')+'</small></div>'
+    +A.custom.map(c=>'<div class="stat"><span>'+esc(c.name)+'</span><b>'+(c.min?fmtDur(Math.round(c.min)):'–')+'</b><small>'+(c.min?'오늘 합계':'기록 없음')+'</small></div>').join('')
     +'<div class="stat"><span>🍚 식사</span><b>'+A.meals.length+'회</b><small>'+(A.meals.filter(m=>m.memo).length)+'회 메뉴 기록</small></div>'
     +'<div class="stat"><span>🍽 최근 7일</span><b>'+(A.heavyN?'헤비 '+A.heavyN:'괜찮음')+'</b><small>에바 '+A.evaN+' · 늦은 식사 '+A.lateN+'</small></div>'
     +'</div>';
@@ -1051,7 +1225,7 @@ function renderReport(){
       +(w.meals.length?w.meals.map(({m,f})=>'<div class="mi"><b>'+esc(titleOf(m))+'</b><span'+(m.memo?'':' class="no"')+'>'+(m.memo?esc(m.memo):'메뉴 미기록')+'</span>'+flagTag(f)+'</div>').join(''):'<div class="mi"><span class="no">기록 없음</span></div>')
       +'</div></div>';
   });
-  h+='<div class="sdnote">튀김·면·기름진 고기·술·단 것과 밤 9시 이후 식사를 보고 대충 표시해요. 자세한 건 Claude 평가에서.</div></div>';
+  h+='<div class="sdnote">한 가지 메뉴만으로는 표시하지 않아요. 치킨·피자·곱창 같은 메뉴가 겹치거나, 술이나 늦은 시간(밤 10시 이후)이 더해질 때만 🔥헤비·🚨에바로 표시해요.</div></div>';
   $('rContent').innerHTML=h;
   // 저장된 Claude 평가
   const rep=S.reports[k];
@@ -1066,15 +1240,20 @@ function renderReport(){
   $('keyIn').value=''; $('keyIn').placeholder=hasKey?'저장됨 (•••• '+getKey().slice(-4)+')':'sk-ant-…';
 }
 
-const SYS='너는 사용자의 하루 루틴 기록을 보고 짧게 평가해 주는 생활 코치야. 입력은 사용자가 플래너에 기록한 하루(JSON)야. '
- +'기록된 내용만 근거로 판단하고, 기록이 없는 항목은 지어내지 말고 기록이 없다고만 말해. 의학적 진단은 하지 마. '
- +'마크다운 기호(#, *, -)는 쓰지 말고 아래 형식 그대로, 전체 18줄 이내로 부드러운 존댓말로 써 줘.\n'
+const SYS='너는 사용자의 하루 기록을 보고 짧게 평가해 주는 편한 코치야. 입력은 사용자가 플래너에 기록한 하루(JSON)야. '
+ +'기록된 내용만 근거로 판단하고, 기록이 없는 항목은 지어내지 마. 의학적 진단은 하지 마.\n'
+ +'현실적으로 평가해 줘. 교과서 기준(7~9시간 수면, 자정 전 취침, 90분마다 휴식 같은 것)을 들이밀지 말고, '
+ +'이 사람의 최근 7일 평균과 비교해서 나아졌는지 나빠졌는지를 봐. 늦게 자는 생활 자체를 탓하지 말고, 규칙성이 크게 무너졌을 때만 짚어. '
+ +'작업 중간에 쉬라는 일반적인 조언은 하지 마. 휴식은 깨어 있는 동안 일정이 비어 있던 시간을 계산한 값이라 참고만 해. '
+ +'식사는 한 끼가 무겁다고 지적하지 마. 무거운 식사가 며칠씩 반복되거나, 늦은 밤 치킨에 술처럼 정말 과한 조합일 때만 가볍게 한마디 해. '
+ +'잘한 점은 구체적으로 인정해 주고, 잔소리처럼 들리지 않게 써.\n'
+ +'마크다운 기호(#, *, -)는 쓰지 말고 아래 형식 그대로, 전체 12줄 이내로 부드러운 존댓말로 써 줘.\n'
  +'총평: (한 줄, 10점 만점 점수 포함)\n'
- +'😴 수면: (수면 양과 최근 7일 규칙성, 1~2줄)\n'
- +'💻 작업·휴식: (작업량, 연속 작업, 휴식 균형, 1~2줄. 휴식은 사용자가 따로 등록하지 않고 깨어 있는 동안 일정이 비어 있던 시간으로 계산한 값이야)\n'
- +'🐶 강아지: (강아지와 보낸 시간이 있으면 한 줄로 칭찬하거나 제안. 기록이 없으면 이 줄은 빼)\n'
- +'🍚 식사: (오늘 메뉴와 최근 7일 식사 패턴. 과하게 헤비한 메뉴나 야식은 메뉴 이름을 짚어서 솔직하게 말해 줘, 1~3줄. 식사 기록이 아예 없으면 이 줄은 빼)\n'
- +'✅ 내일은:\n1. (시간을 넣은 구체적 행동)\n2. …\n3. …';
+ +'😴 수면: (최근 7일과 비교한 오늘 수면, 1~2줄)\n'
+ +'💻 하루: (작업량과 하루 흐름, 1줄)\n'
+ +'🗂 그 밖에: (사용자가 만든 종류(예: 강아지)에 쓴 시간이 있으면 한 줄. 없으면 이 줄은 빼)\n'
+ +'🍚 식사: (1~2줄. 특별히 할 말이 없으면 짧게 괜찮다고만. 식사 기록이 아예 없으면 이 줄은 빼)\n'
+ +'✅ 내일은:\n1. (당장 할 수 있는 작은 행동)\n2. (선택, 꼭 필요할 때만)';
 function payloadOf(A){
   const T=ms=>fmtT(ms), M=m=>Math.round(m);
   return {
@@ -1082,10 +1261,10 @@ function payloadOf(A){
     휴일:!!S.holidays[keyOf(A.day)],
     오늘_수면:A.sl?{취침:T(A.sl.main.start),기상:T(A.sl.main.end),총_분:M(A.sl.total),낮잠_횟수:A.sl.naps}:'기록 없음',
     최근7일_수면:A.week.map(w=>w.sl?{날짜:keyOf(w.day),취침:T(w.sl.main.start),기상:T(w.sl.main.end),총_분:M(w.sl.total)}:{날짜:keyOf(w.day),기록:'없음'}),
-    합계:{깨어있던_분:M(A.awakeMin),작업_분:M(A.workMin),최장_연속작업_분:M(A.longest),휴식_빈시간_분:M(A.restMin),강아지_분:M(A.dogMin),식사_횟수:A.meals.length},
-    휴식_빈시간_구간:A.restIv.filter(x=>x[1]-x[0]>=15*MIN).map(x=>T(x[0])+'~'+T(x[1])),
-    최근7일_식사:A.mealWeek.map(w=>({날짜:keyOf(w.day),식사:w.meals.map(({m,f})=>({이름:titleOf(m),시각:T(m.start),메뉴:m.memo||'미기록',자동표시:f.level===2?'에바':f.level===1?'헤비':f.late?'늦은 식사':''}))})),
-    일정:A.evs.map(e=>{const o={종류:KIND_NAME[kindOf(e)]||'기타',제목:titleOf(e),시작:T(e.start),끝:T(e.end),분:M((e.end-e.start)/MIN)}; if(e.memo) o[isMeal(e)?'메뉴':'메모']=e.memo; return o;}),
+    합계:{깨어있던_분:M(A.awakeMin),작업_분:M(A.workMin),휴식_빈시간_분:M(A.restMin),식사_횟수:A.meals.length},
+    사용자_종류별_분:Object.fromEntries(A.custom.map(c=>[c.name,M(c.min)])),
+    최근7일_식사:A.mealWeek.map(w=>({날짜:keyOf(w.day),식사:w.meals.map(({m,f})=>({이름:titleOf(m),시각:T(m.start),메뉴:m.memo||'미기록',자동표시:f.level===2?'에바':f.level===1?'헤비':''}))})),
+    일정:A.evs.map(e=>{const o={종류:kindName(kindOf(e)),제목:titleOf(e),시작:T(e.start),끝:T(e.end),분:M((e.end-e.start)/MIN)}; if(e.memo) o[isMeal(e)?'메뉴':'메모']=e.memo; return o;}),
     자동점검:A.F.map(f=>f[1])
   };
 }
